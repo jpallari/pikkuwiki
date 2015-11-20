@@ -17,6 +17,7 @@ fi
 # Enable "strict" mode
 set -euo pipefail
 
+# Pattern for recognizing links to other files
 LINK_PATTERN='~[_/[:alnum:]]\+'
 
 grep_links() {
@@ -28,7 +29,7 @@ heading() {
 }
 
 expand_link() {
-    local context="${1%/}"
+    local context=${1%/}
     local link=${2#\~}
     if [ ! "$(echo "$link" | cut -c1)" = "/" ]; then
         link="$context/$link"
@@ -72,9 +73,14 @@ text_files() {
 }
 
 find_files() {
-    local link="${1:-}"
-    local pattern="${2:-}"
-    local filename=$(expand_link "" "$link")
+    local link=${1:-}
+    local filename="$link"
+    local pattern=${2:-}
+
+    if [ ! -f "$filename" ]; then
+        filename=$(expand_link "" "$link")
+    fi
+
     if [ -f "$filename" ]; then
         find_links_from_file "$filename" "$pattern"
     elif [ -d "${filename%.txt}" ]; then
