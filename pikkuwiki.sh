@@ -1,12 +1,16 @@
 #!/bin/sh
 
 # Read env variables
-if [ -z "$WIKI_DIR" ]; then
-    WIKI_DIR="$HOME/pikkuwiki"
+if [ -z "$PW_WIKI_DIR" ]; then
+    PW_WIKI_DIR="$HOME/pikkuwiki"
 fi
 
 if [ -z "$EDITOR" ]; then
     EDITOR=vi
+fi
+
+if [ -z "$PW_DEFAULT_PAGE" ]; then
+    PW_DEFAULT_PAGE="Index"
 fi
 
 
@@ -29,12 +33,12 @@ expand_link() {
     if [ ! "$(echo "$link" | cut -c1)" = "/" ]; then
         link="$context/$link"
     fi
-    echo "$WIKI_DIR/${link#/}.txt"
+    echo "$PW_WIKI_DIR/${link#/}.txt"
 }
 
 make_link() {
     local link
-    link=${1#$WIKI_DIR}
+    link=${1#$PW_WIKI_DIR}
     link=${link#/}
     link=${link%.txt}
     echo "~$link"
@@ -78,12 +82,20 @@ find_files() {
     fi | expand_links "" | sort -u
 }
 
+open_link() {
+    local link=${1:-$PW_DEFAULT_PAGE}
+    $EDITOR "$(expand_link "" "$link")"
+}
+
 
 # Main program
-case $1 in
+case ${1:-} in
     o|open)
-        $EDITOR "$(expand_link "" "$2")" ;;
+        open_link "${2:-}" ;;
     f|find)
         shift
         find_files "$@" ;;
+    *)
+        echo "TODO: help"
+        ;;
 esac
