@@ -1,18 +1,9 @@
 #!/bin/sh
 
 # Read env variables
-if [ -z "$PW_WIKI_DIR" ]; then
-    PW_WIKI_DIR="$HOME/pikkuwiki"
-fi
-
-if [ -z "$EDITOR" ]; then
-    EDITOR=vi
-fi
-
-if [ -z "$PW_DEFAULT_PAGE" ]; then
-    PW_DEFAULT_PAGE="Index"
-fi
-
+[ -z "$PW_WIKI_DIR" ] && PW_WIKI_DIR="$HOME/pikkuwiki"
+[ -z "$EDITOR" ] && EDITOR=vi
+[ -z "$PW_DEFAULT_PAGE" ] && PW_DEFAULT_PAGE="Index"
 
 # Enable "strict" mode
 set -euo pipefail
@@ -24,8 +15,12 @@ grep_links() {
     grep -o "$LINK_PATTERN"
 }
 
-heading() {
-    head -n1
+filename_to_link() {
+    local link
+    link=${1#$PW_WIKI_DIR}
+    link=${link#/}
+    link=${link%.txt}
+    echo "$link"
 }
 
 expand_link() {
@@ -35,20 +30,6 @@ expand_link() {
         link="$context/$link"
     fi
     echo "$PW_WIKI_DIR/${link#/}.txt"
-}
-
-make_link() {
-    local link
-    link=${1#$PW_WIKI_DIR}
-    link=${link#/}
-    link=${link%.txt}
-    echo "~$link"
-}
-
-make_links() {
-    while read line; do
-        make_link "$line"
-    done
 }
 
 expand_links() {
@@ -72,7 +53,7 @@ text_files() {
     find "$1" -iname '*.txt'
 }
 
-find_files() {
+find_links() {
     local link=${1:-}
     local filename="$link"
     local pattern=${2:-}
@@ -88,6 +69,43 @@ find_files() {
     fi | expand_links "" | sort -u
 }
 
+format_pretty() {
+    local filename=${1:-}
+    local heading="[No file]"
+    [ -f "$filename" ] && heading=$(head -n1 "$filename")
+    local link=$(filename_to_link "$filename")
+    echo "$link:	$heading"
+}
+
+format_links() {
+    local format=${1:-}
+    local formatter="echo"
+    local after_formatter="cat"
+
+    if [ "$format" = "pretty" ]; then
+        formatter="format_pretty"
+        after_formatter="column -t -s\"$(printf \t)\""
+    fi
+
+    while read line; do
+        $formatter "$line"
+    done | $after_formatter
+}
+
+find_and_format_links() {
+    local link
+    local pattern=""
+    local format=""
+    while getopts "l:p:F:" flag; do
+        case "$flag" in
+            l) link=$OPTARG ;;
+            p) pattern=$OPTARG ;;
+            F) format=$OPTARG ;;
+        esac
+    done
+    find_links "$link" "$pattern" | format_links "$format"
+}
+
 open_link() {
     local link=${1:-$PW_DEFAULT_PAGE}
     $EDITOR "$(expand_link "" "$link")"
@@ -100,7 +118,7 @@ case ${1:-} in
         open_link "${2:-}" ;;
     f|find)
         shift
-        find_files "$@" ;;
+        find_and_format_links "$@" ;;
     *)
         echo "TODO: help"
         ;;
