@@ -100,7 +100,7 @@ format_links() {
     local formatter="echo"
     local after_formatter="cat"
 
-    if [ "$format" = "pretty" ]; then
+    if "$format"; then
         formatter="formatter_pretty"
         after_formatter="after_formatter_pretty"
     fi
@@ -113,12 +113,12 @@ format_links() {
 find_and_format_links() {
     local link
     local pattern=""
-    local format=""
-    while getopts "l:p:F:" flag; do
+    local format=false
+    while getopts "l:p:F" flag; do
         case "$flag" in
             l) link=$OPTARG ;;
             p) pattern=$OPTARG ;;
-            F) format=$OPTARG ;;
+            F) format=true ;;
         esac
     done
     find_links "$link" "$pattern" | format_links "$format"
