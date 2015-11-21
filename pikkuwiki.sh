@@ -4,6 +4,7 @@
 [ -z "$PW_WIKI_DIR" ] && PW_WIKI_DIR="$HOME/pikkuwiki"
 [ -z "$EDITOR" ] && EDITOR=vi
 [ -z "$PW_DEFAULT_PAGE" ] && PW_DEFAULT_PAGE="Index"
+[ -z "$PW_PRETTY_FORMAT" ] && PW_PRETTY_FORMAT="%l:	%h"
 
 # Enable "strict" mode
 set -euo pipefail
@@ -69,12 +70,29 @@ find_links() {
     fi | expand_links "" | sort -u
 }
 
-format_pretty() {
+sed_escape() {
+    echo "$1" | sed -e 's/[\/&]/\\&/g'
+}
+
+formatter_pretty() {
     local filename=${1:-}
     local heading="[No file]"
     [ -f "$filename" ] && heading=$(head -n1 "$filename")
     local link=$(filename_to_link "$filename")
-    echo "$link:	$heading"
+
+    filename=$(sed_escape "$filename")
+    heading=$(sed_escape "$heading")
+    link=$(sed_escape "$link")
+
+    local result=$(echo "$PW_PRETTY_FORMAT" | sed \
+        -e "s/%l/$link/g" \
+        -e "s/%h/$heading/g" \
+        -e "s/%f/$filename/g")
+    printf "$result\n"
+}
+
+after_formatter_pretty() {
+    column -t -s"$(printf '\t')"
 }
 
 format_links() {
@@ -83,8 +101,8 @@ format_links() {
     local after_formatter="cat"
 
     if [ "$format" = "pretty" ]; then
-        formatter="format_pretty"
-        after_formatter="column -t -s\"$(printf \t)\""
+        formatter="formatter_pretty"
+        after_formatter="after_formatter_pretty"
     fi
 
     while read line; do
