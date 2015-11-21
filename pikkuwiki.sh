@@ -24,18 +24,21 @@ filename_to_link() {
     echo "$link"
 }
 
-expand_link() {
-    local context=${1%/}
+resolve_link() {
+    local context="/${1#$PW_WIKI_DIR/}"
+    context=${context%/*}
     local link=${2#\~}
+
     if [ ! "$(echo "$link" | cut -c1)" = "/" ]; then
         link="$context/$link"
     fi
+
     echo "$PW_WIKI_DIR/${link#/}.txt"
 }
 
-expand_links() {
+resolve_links() {
     while read line; do
-        expand_link "$1" "$line"
+        resolve_link "$1" "$line"
     done
 }
 
@@ -60,14 +63,14 @@ find_links() {
     local pattern=${2:-}
 
     if [ ! -f "$filename" ]; then
-        filename=$(expand_link "" "$link")
+        filename=$(resolve_link "" "$link")
     fi
 
     if [ -f "$filename" ]; then
         find_links_from_file "$filename" "$pattern"
     elif [ -d "${filename%.txt}" ]; then
         find_links_from_directory "${filename%.txt}" "$pattern"
-    fi | expand_links "" | sort -u
+    fi | resolve_links "" | sort -u
 }
 
 sed_escape() {
@@ -126,7 +129,7 @@ find_and_format_links() {
 
 open_link() {
     local link=${1:-$PW_DEFAULT_PAGE}
-    $EDITOR "$(expand_link "" "$link")"
+    $EDITOR "$(resolve_link "" "$link")"
 }
 
 # Main program
