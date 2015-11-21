@@ -129,6 +129,20 @@ open_link() {
     $EDITOR "$(expand_link "" "$link")"
 }
 
+# Main program
+run_pikkuwiki() {
+    case ${1:-} in
+        o|open)
+            open_link "${2:-}" ;;
+        f|find)
+            shift
+            find_and_format_links "$@" ;;
+        *)
+            print_help
+            ;;
+    esac
+}
+
 print_help() {
     cat <<'EOF'
 pikkuwiki - Minimal personal wiki tools
@@ -204,15 +218,3 @@ Examples:
 EOF
 }
 
-
-# Main program
-case ${1:-} in
-    o|open)
-        open_link "${2:-}" ;;
-    f|find)
-        shift
-        find_and_format_links "$@" ;;
-    *)
-        print_help
-        ;;
-esac
