@@ -129,6 +129,81 @@ open_link() {
     $EDITOR "$(expand_link "" "$link")"
 }
 
+print_help() {
+    cat <<'EOF'
+pikkuwiki - Minimal personal wiki tools
+
+usage: pikkuwiki <command> [arguments]
+
+Commands:
+  o, open     open a given link using EDITOR. If link is empty,
+              PW_DEFAULT_PAGE or "Index" is opened instead.
+
+  f, find     find links from a given link, file, or directory
+              using given pattern. Outputs the filenames of found
+              links unless alternatiove formatting is provided.
+
+Find arguments:
+  -l          link, file, or directory to search links from.
+              Directories are scanned recursively for .txt files.
+
+  -p          RegEx pattern to use for filtering links.
+              By default, no filtering is done.
+
+  -F          Use alternative formatting from PW_PRETTY_FORMAT.
+
+Environment variables:
+  PW_WIKI_DIR           The directory where pages are located.
+                        Default: $HOME/pikkuwiki
+
+  EDITOR                The editor that the open command launches
+                        Default: vi
+
+  PW_DEFAULT_PAGE       The default page that is opened if no link
+                        is provided for open command.
+                        Default: Index
+
+  PW_PRETTY_FORMAT      The format to use in alternative formatting.
+                        Default: "%l:\t%h"
+
+Link format:
+  All links to other pages start with tilde (~).
+  All pages point to a .txt file.
+  The page which the link refers to depends on where the page that is linking.
+
+  Absolute links:
+    ~/Europe            => $PW_WIKI_DIR/Europe.txt
+    ~/Europe/Germany    => $PW_WIKI_DIR/Europe/Germany.txt
+
+  Relative links in '~/Europe' page:
+    ~America            => $PW_WIKI_DIR/America.txt
+    ~America/Canada     => $PW_WIKI_DIR/America/Canada.txt
+
+  Relative links in '~/Europe/Germany' page:
+    ~Berlin             => $PW_WIKI_DIR/Europe/Germany/Berlin.txt
+    ~Munich             => $PW_WIKI_DIR/Europe/Germany/Munich.txt
+
+Alternative formatter:
+  Alternative formatter has three templates which will be formatted
+
+  %l        The absolute link to the page
+  %h        The heading (first line) of the page.
+  %f        The filename of the page.
+
+Examples:
+  Open a page in editor:
+    pikkuwiki open '~America/Canada'
+    pikkuwiki o Europe/Germany
+
+  Find all links in a page or directory and print out as filenames:
+    pikkuwiki find -l Europe/Germany
+    pikkuwiki f -l Europe
+
+  Find matching links:
+    pikkuwiki f -l Europe/Germany -p 'Ber'
+EOF
+}
+
 
 # Main program
 case ${1:-} in
@@ -138,6 +213,6 @@ case ${1:-} in
         shift
         find_and_format_links "$@" ;;
     *)
-        echo "TODO: help"
+        print_help
         ;;
 esac
