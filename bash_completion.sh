@@ -1,17 +1,12 @@
 #!/bin/bash
 
 __pw_links() {
-    local IFS=$'\n'
-    for file in $(find "$PIKKUWIKI_DIR" -name '*.txt'); do
-        file=${file#$PIKKUWIKI_DIR/}
-        file=${file%.txt}
-        echo "$file"
-    done | tr '\n' ' '
+    pikkuwiki find -F | cut -d: -f1 | tr '\n' ' '
 }
 
 _pikkuwiki() {
     local cur prev cmd
-    local commands="open find resolve"
+    local commands="open find show resolve view"
     local flags="-l -p -F"
     COMPREPLY=()
     cur=${COMP_WORDS[COMP_CWORD]}
@@ -20,9 +15,17 @@ _pikkuwiki() {
 
     if [ $COMP_CWORD -eq 1 ]; then
         COMPREPLY=($(compgen -W "$commands" -- $cur))
-    elif [[ "$cmd" =~ (o|pen) || "$cmd" =~ (r|resolve) ]]; then
+    elif [[ "$cmd" =~ (o|pen) || "$cmd" =~ (r|resolve) || "$cmd" =~ (v|view) ]]; then
         COMPREPLY=($(compgen -W "$(__pw_links)" -- $cur))
     elif [[ "$cmd" =~ (f|find) ]]; then
+        if [[ "$prev" =~ -(p|F) ]]; then
+            if [ "$prev" = "-F" ]; then
+                COMPREPLY=($(compgen -W "$flags" -- $cur))
+            fi
+        else
+            COMPREPLY=($(compgen -W "$flags" -- $cur))
+        fi
+    elif [[ "$cmd" =~ (s|show) ]]; then
         if [[ "$prev" =~ -(l|p|F) ]]; then
             if [ "$prev" = "-l" ]; then
                 COMPREPLY=($(compgen -W "$(__pw_links)" -- $cur))
