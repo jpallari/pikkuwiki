@@ -57,7 +57,7 @@ find_links_from_directory() {
 }
 
 text_files() {
-    find "$1" -iname '*.txt'
+    find "$1" -name '*.txt'
 }
 
 find_links() {
