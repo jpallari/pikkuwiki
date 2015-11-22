@@ -3,6 +3,7 @@
 # Read env variables
 [ -z "$PIKKUWIKI_DIR" ] && PIKKUWIKI_DIR="$HOME/pikkuwiki"
 [ -z "$EDITOR" ] && EDITOR=vi
+[ -z "$PAGER" ] && PAGER=cat
 [ -z "$PW_DEFAULT_PAGE" ] && PW_DEFAULT_PAGE="index"
 
 # Enable "strict" mode
@@ -136,27 +137,25 @@ show_and_format_links() {
 }
 
 open_link() {
-    local link=${1:-$PW_DEFAULT_PAGE}
-    $EDITOR "$(resolve_link "" "$link")"
+    $EDITOR "$(resolve_link "" "$1")"
+}
+
+view_link() {
+    $PAGER "$(resolve_link "" "$1")"
 }
 
 # Main program
 run_pikkuwiki() {
-    case ${1:-} in
-        o|open)
-            open_link "${2:-}" ;;
-        f|find)
-            shift
-            find_and_format_pages "$@" ;;
-        s|show)
-            shift
-            show_and_format_links "$@" ;;
-        r|resolve)
-            resolve_link "${2:-}" "${3:-}" ;;
-        h|help)
-            print_fullhelp ;;
-        *)
-            print_minihelp 1>&2 ;;
+    local cmd=${1:-}
+    shift
+    case "$cmd" in
+        v|view)     view_link "${1:-}" ;;
+        o|open)     open_link "${1:-}" ;;
+        f|find)     find_and_format_pages "$@" ;;
+        s|show)     show_and_format_links "$@" ;;
+        r|resolve)  resolve_link "${1:-}" "${2:-}" ;;
+        h|help)     print_fullhelp ;;
+        *)          print_minihelp 1>&2 ;;
     esac
 }
 
@@ -168,6 +167,9 @@ usage: pikkuwiki <command> [arguments]
 
 Commands:
   o, open     open a given link using EDITOR. If link is empty,
+              PW_DEFAULT_PAGE or "index" is opened instead.
+
+  v, view     open a given link using PAGER. If link is empty,
               PW_DEFAULT_PAGE or "index" is opened instead.
 
   f, find     find pages using the given pattern. Outputs the filenames of
@@ -182,12 +184,12 @@ Commands:
 
 Find arguments:
   -p          RegEx pattern to use for filtering pages.
-  -F          Use alternative formatting from PW_PRETTY_FORMAT.
+  -F          Use alternative formatting.
 
 Show arguments:
   -l          link or file to search links from.
   -p          RegEx pattern to use for filtering pages
-  -F          Use alternative formatting from PW_PRETTY_FORMAT.
+  -F          Use alternative formatting.
 
 EOF
 }
@@ -196,11 +198,14 @@ print_fullhelp() {
     print_minihelp
     cat <<'EOF'
 Environment variables:
-  PIKKUWIKI_DIR           The directory where pages are located.
+  PIKKUWIKI_DIR         The directory where pages are located.
                         Default: $HOME/pikkuwiki
 
   EDITOR                The editor that the open command launches
                         Default: vi
+
+  PAGER                 The viewer that is view command launches.
+                        Default: cat
 
   PW_DEFAULT_PAGE       The default page that is opened if no link
                         is provided for open command.
@@ -222,13 +227,6 @@ Link format:
   Relative links in '~/Europe/Germany' page:
     ~Berlin             => $PIKKUWIKI_DIR/Europe/Germany/Berlin.txt
     ~Munich             => $PIKKUWIKI_DIR/Europe/Germany/Munich.txt
-
-Alternative formatter:
-  Alternative formatter has three templates which will be formatted
-
-  %l        The absolute link to the page
-  %h        The heading (first line) of the page.
-  %f        The filename of the page.
 
 Examples:
   Open a page in editor:
