@@ -36,7 +36,7 @@ list() {
 
 start_time=$(date)
 
-PIKKUWIKI_DIR="./examplewiki"
+PIKKUWIKI_DIR="examplewiki"
 
 # The tests
 tests() {
@@ -44,22 +44,22 @@ tests() {
 
     testitem "resolve link"
 
-    [ $(resolve_link "foo" "bar") = "$PIKKUWIKI_DIR/bar.txt" ]
+    [ $(run_pikkuwiki resolve "foo" "bar") = "$PIKKUWIKI_DIR/bar.txt" ]
     assert "context at root level"
 
-    [ $(resolve_link "" "cool") = "$PIKKUWIKI_DIR/cool.txt" ]
+    [ $(run_pikkuwiki resolve "" "cool") = "$PIKKUWIKI_DIR/cool.txt" ]
     assert "no context"
 
-    [ $(resolve_link "foo/bar" "nice") = "$PIKKUWIKI_DIR/foo/nice.txt" ]
+    [ $(run_pikkuwiki resolve "foo/bar" "nice") = "$PIKKUWIKI_DIR/foo/nice.txt" ]
     assert "context at one level deep"
 
-    [ $(resolve_link "foo/bar/" "nice") = "$PIKKUWIKI_DIR/foo/bar/nice.txt" ]
+    [ $(run_pikkuwiki resolve "foo/bar/" "nice") = "$PIKKUWIKI_DIR/foo/bar/nice.txt" ]
     assert "directory context"
 
-    [ $(resolve_link "ignored/nope/" "/athome") = "$PIKKUWIKI_DIR/athome.txt" ]
+    [ $(run_pikkuwiki resolve "ignored/nope/" "/athome") = "$PIKKUWIKI_DIR/athome.txt" ]
     assert "ignored context"
 
-    [ $(resolve_link "$PIKKUWIKI_DIR/my/file" "other") = "$PIKKUWIKI_DIR/my/other.txt" ]
+    [ $(run_pikkuwiki resolve "$PIKKUWIKI_DIR/my/file" "other") = "$PIKKUWIKI_DIR/my/other.txt" ]
     assert "wiki directory in context"
 
     testitem "filename to link"
@@ -73,12 +73,12 @@ tests() {
     testitem "text files"
 
     expected_files=$(list \
-        "./examplewiki/Project/codeproject1.txt" \
-        "./examplewiki/Project/list.txt" \
-        "./examplewiki/Project/codeproject2.txt" \
-        "./examplewiki/groceries.txt" \
-        "./examplewiki/Index.txt" \
-        "./examplewiki/todo.txt" \
+        "examplewiki/Project/codeproject1.txt" \
+        "examplewiki/Project/list.txt" \
+        "examplewiki/Project/codeproject2.txt" \
+        "examplewiki/groceries.txt" \
+        "examplewiki/Index.txt" \
+        "examplewiki/todo.txt" \
     )
     [ "$(text_files $PIKKUWIKI_DIR)" = "$expected_files" ]
     assert "all files"
@@ -86,30 +86,30 @@ tests() {
     testitem "find"
 
     expected_files=$(list \
-        "./examplewiki/groceries.txt" \
-        "./examplewiki/Project/codeproject1.txt" \
-        "./examplewiki/Project/codeproject2.txt" \
-        "./examplewiki/Project/thesis.txt" \
-        "./examplewiki/todo.txt" \
+        "examplewiki/groceries.txt" \
+        "examplewiki/Project/codeproject1.txt" \
+        "examplewiki/Project/codeproject2.txt" \
+        "examplewiki/Project/thesis.txt" \
+        "examplewiki/todo.txt" \
     )
     [ "$(run_pikkuwiki find)" = "$expected_files" ]
     assert "find all"
 
     expected_files=$(list \
-        "./examplewiki/Project/codeproject1.txt" \
-        "./examplewiki/Project/codeproject2.txt" \
+        "examplewiki/Project/codeproject1.txt" \
+        "examplewiki/Project/codeproject2.txt" \
     )
     [ "$(run_pikkuwiki find -l Project/list -p code)" = "$expected_files" ]
     assert "find from Project/list with filter 'code'"
 
-    [ "$(run_pikkuwiki find -l Project/codeproject1)" = "./examplewiki/todo.txt" ]
+    [ "$(run_pikkuwiki find -l Project/codeproject1)" = "examplewiki/todo.txt" ]
     assert "find from Project/codeproject1"
 
     expected_files=$(list \
-        "./examplewiki/Project/codeproject1.txt" \
-        "./examplewiki/Project/codeproject2.txt" \
-        "./examplewiki/Project/thesis.txt" \
-        "./examplewiki/todo.txt" \
+        "examplewiki/Project/codeproject1.txt" \
+        "examplewiki/Project/codeproject2.txt" \
+        "examplewiki/Project/thesis.txt" \
+        "examplewiki/todo.txt" \
     )
     [ "$(run_pikkuwiki find -l Project)" = "$expected_files" ]
     assert "find from Project"

@@ -143,6 +143,8 @@ run_pikkuwiki() {
         f|find)
             shift
             find_and_format_links "$@" ;;
+        r|resolve)
+            resolve_link "$2" "$3" ;;
         *)
             print_help
             ;;
@@ -162,6 +164,8 @@ Commands:
   f, find     find links from a given link, file, or directory
               using given pattern. Outputs the filenames of found
               links unless alternatiove formatting is provided.
+
+  r, resolve  resolve filename for given filename and link combination
 
 Find arguments:
   -l          link, file, or directory to search links from.
@@ -221,6 +225,10 @@ Examples:
 
   Find matching links:
     pikkuwiki f -l Europe/Germany -p 'Ber'
+
+  Resolve link:
+    pikkuwiki resolve Europe Germany
+    pikkuwiki r $PIKKUWIKI_DIR/Europe/Germany.txt Berlin
 EOF
 }
 
