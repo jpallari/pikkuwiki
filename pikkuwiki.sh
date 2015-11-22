@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Read env variables
-[ -z "$PW_WIKI_DIR" ] && PW_WIKI_DIR="$HOME/pikkuwiki"
+[ -z "$PIKKUWIKI_DIR" ] && PIKKUWIKI_DIR="$HOME/pikkuwiki"
 [ -z "$EDITOR" ] && EDITOR=vi
 [ -z "$PW_DEFAULT_PAGE" ] && PW_DEFAULT_PAGE="Index"
 [ -z "$PW_PRETTY_FORMAT" ] && PW_PRETTY_FORMAT="%l:	%h"
@@ -12,20 +12,23 @@ set -euo pipefail
 # Pattern for recognizing links to other files
 LINK_PATTERN='~[_/[:alnum:]]\+'
 
+NEWL='
+'
+
 grep_links() {
     grep -o "$LINK_PATTERN"
 }
 
 filename_to_link() {
     local link
-    link=${1#$PW_WIKI_DIR}
+    link=${1#$PIKKUWIKI_DIR}
     link=${link#/}
     link=${link%.txt}
     echo "$link"
 }
 
 resolve_link() {
-    local context="/${1#$PW_WIKI_DIR/}"
+    local context="/${1#$PIKKUWIKI_DIR/}"
     context=${context%/*}
     local link=${2#\~}
 
@@ -33,7 +36,7 @@ resolve_link() {
         link="$context/$link"
     fi
 
-    echo "$PW_WIKI_DIR/${link#/}.txt"
+    echo "$PIKKUWIKI_DIR/${link#/}.txt"
 }
 
 resolve_links() {
@@ -43,11 +46,11 @@ resolve_links() {
 }
 
 find_links_from_file() {
-    grep_links < "$1" | grep "$2"
+    grep_links < "$1" | grep "$2" | resolve_links "$filename"
 }
 
 find_links_from_directory() {
-    local IFS=$(printf '\n')
+    local IFS=$NEWL
     for filename in $(text_files "$1"); do
         find_links_from_file "$filename" "$2"
     done
@@ -70,7 +73,7 @@ find_links() {
         find_links_from_file "$filename" "$pattern"
     elif [ -d "${filename%.txt}" ]; then
         find_links_from_directory "${filename%.txt}" "$pattern"
-    fi | resolve_links "" | sort -u
+    fi | sort -u
 }
 
 sed_escape() {
@@ -95,7 +98,7 @@ formatter_pretty() {
 }
 
 after_formatter_pretty() {
-    column -t -s"$(printf '\t')"
+    column -t -s"	"
 }
 
 format_links() {
@@ -114,7 +117,7 @@ format_links() {
 }
 
 find_and_format_links() {
-    local link
+    local link=""
     local pattern=""
     local format=false
     while getopts "l:p:F" flag; do
@@ -170,7 +173,7 @@ Find arguments:
   -F          Use alternative formatting from PW_PRETTY_FORMAT.
 
 Environment variables:
-  PW_WIKI_DIR           The directory where pages are located.
+  PIKKUWIKI_DIR           The directory where pages are located.
                         Default: $HOME/pikkuwiki
 
   EDITOR                The editor that the open command launches
@@ -189,16 +192,16 @@ Link format:
   The page which the link refers to depends on where the page that is linking.
 
   Absolute links:
-    ~/Europe            => $PW_WIKI_DIR/Europe.txt
-    ~/Europe/Germany    => $PW_WIKI_DIR/Europe/Germany.txt
+    ~/Europe            => $PIKKUWIKI_DIR/Europe.txt
+    ~/Europe/Germany    => $PIKKUWIKI_DIR/Europe/Germany.txt
 
   Relative links in '~/Europe' page:
-    ~America            => $PW_WIKI_DIR/America.txt
-    ~America/Canada     => $PW_WIKI_DIR/America/Canada.txt
+    ~America            => $PIKKUWIKI_DIR/America.txt
+    ~America/Canada     => $PIKKUWIKI_DIR/America/Canada.txt
 
   Relative links in '~/Europe/Germany' page:
-    ~Berlin             => $PW_WIKI_DIR/Europe/Germany/Berlin.txt
-    ~Munich             => $PW_WIKI_DIR/Europe/Germany/Munich.txt
+    ~Berlin             => $PIKKUWIKI_DIR/Europe/Germany/Berlin.txt
+    ~Munich             => $PIKKUWIKI_DIR/Europe/Germany/Munich.txt
 
 Alternative formatter:
   Alternative formatter has three templates which will be formatted

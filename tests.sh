@@ -24,29 +24,95 @@ assert() {
     fi
 }
 
+testitem() {
+    ASSERT_INDENT=2
+    echo ""
+    echo "$1:"
+}
+
+list() {
+    printf "%s\n" "$@"
+}
+
 start_time=$(date)
+
+PIKKUWIKI_DIR="./examplewiki"
 
 # The tests
 tests() {
-    echo "resolve link:"
+    local expected_files
 
-    [ $(resolve_link "foo" "bar") = "$PW_WIKI_DIR/bar.txt" ]
+    testitem "resolve link"
+
+    [ $(resolve_link "foo" "bar") = "$PIKKUWIKI_DIR/bar.txt" ]
     assert "context at root level"
 
-    [ $(resolve_link "" "cool") = "$PW_WIKI_DIR/cool.txt" ]
+    [ $(resolve_link "" "cool") = "$PIKKUWIKI_DIR/cool.txt" ]
     assert "no context"
 
-    [ $(resolve_link "foo/bar" "nice") = "$PW_WIKI_DIR/foo/nice.txt" ]
+    [ $(resolve_link "foo/bar" "nice") = "$PIKKUWIKI_DIR/foo/nice.txt" ]
     assert "context at one level deep"
 
-    [ $(resolve_link "foo/bar/" "nice") = "$PW_WIKI_DIR/foo/bar/nice.txt" ]
+    [ $(resolve_link "foo/bar/" "nice") = "$PIKKUWIKI_DIR/foo/bar/nice.txt" ]
     assert "directory context"
 
-    [ $(resolve_link "ignored/nope/" "/athome") = "$PW_WIKI_DIR/athome.txt" ]
+    [ $(resolve_link "ignored/nope/" "/athome") = "$PIKKUWIKI_DIR/athome.txt" ]
     assert "ignored context"
 
-    [ $(resolve_link "$PW_WIKI_DIR/my/file" "other") = "$PW_WIKI_DIR/my/other.txt" ]
+    [ $(resolve_link "$PIKKUWIKI_DIR/my/file" "other") = "$PIKKUWIKI_DIR/my/other.txt" ]
     assert "wiki directory in context"
+
+    testitem "filename to link"
+
+    [ $(filename_to_link "$PIKKUWIKI_DIR/foobar.txt") = "foobar" ]
+    assert "root file"
+
+    [ $(filename_to_link "$PIKKUWIKI_DIR/foo/bar.txt") = "foo/bar" ]
+    assert "sub directory file"
+
+    testitem "text files"
+
+    expected_files=$(list \
+        "./examplewiki/Project/codeproject1.txt" \
+        "./examplewiki/Project/list.txt" \
+        "./examplewiki/Project/codeproject2.txt" \
+        "./examplewiki/groceries.txt" \
+        "./examplewiki/Index.txt" \
+        "./examplewiki/todo.txt" \
+    )
+    [ "$(text_files $PIKKUWIKI_DIR)" = "$expected_files" ]
+    assert "all files"
+
+    testitem "find"
+
+    expected_files=$(list \
+        "./examplewiki/groceries.txt" \
+        "./examplewiki/Project/codeproject1.txt" \
+        "./examplewiki/Project/codeproject2.txt" \
+        "./examplewiki/Project/thesis.txt" \
+        "./examplewiki/todo.txt" \
+    )
+    [ "$(run_pikkuwiki find)" = "$expected_files" ]
+    assert "find all"
+
+    expected_files=$(list \
+        "./examplewiki/Project/codeproject1.txt" \
+        "./examplewiki/Project/codeproject2.txt" \
+    )
+    [ "$(run_pikkuwiki find -l Project/list -p code)" = "$expected_files" ]
+    assert "find from Project/list with filter 'code'"
+
+    [ "$(run_pikkuwiki find -l Project/codeproject1)" = "./examplewiki/todo.txt" ]
+    assert "find from Project/codeproject1"
+
+    expected_files=$(list \
+        "./examplewiki/Project/codeproject1.txt" \
+        "./examplewiki/Project/codeproject2.txt" \
+        "./examplewiki/Project/thesis.txt" \
+        "./examplewiki/todo.txt" \
+    )
+    [ "$(run_pikkuwiki find -l Project)" = "$expected_files" ]
+    assert "find from Project"
 }
 
 time tests
@@ -56,3 +122,4 @@ end_time=$(date)
 echo ""
 echo "Tests started : $start_time"
 echo "Tests ended   : $end_time"
+
