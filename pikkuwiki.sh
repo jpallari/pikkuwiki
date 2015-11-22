@@ -149,13 +149,14 @@ run_pikkuwiki() {
             find_and_format_links "$@" ;;
         r|resolve)
             resolve_link "${2:-}" "${3:-}" ;;
+        h|help)
+            print_fullhelp ;;
         *)
-            print_help
-            ;;
+            print_minihelp 1>&2 ;;
     esac
 }
 
-print_help() {
+print_minihelp() {
     cat <<'EOF'
 pikkuwiki - Minimal personal wiki tools
 
@@ -171,6 +172,8 @@ Commands:
 
   r, resolve  resolve filename for given filename and link combination
 
+  h, help     Print full help text
+
 Find arguments:
   -l          link, file, or directory to search links from.
               Directories are scanned recursively for .txt files.
@@ -179,7 +182,12 @@ Find arguments:
               By default, no filtering is done.
 
   -F          Use alternative formatting from PW_PRETTY_FORMAT.
+EOF
+}
 
+print_fullhelp() {
+    print_minihelp
+    cat <<'EOF'
 Environment variables:
   PIKKUWIKI_DIR           The directory where pages are located.
                         Default: $HOME/pikkuwiki
