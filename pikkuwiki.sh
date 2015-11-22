@@ -16,7 +16,7 @@ NEWL='
 '
 
 grep_links() {
-    grep -o "$LINK_PATTERN"
+    grep -ow "$LINK_PATTERN"
 }
 
 filename_to_link() {
