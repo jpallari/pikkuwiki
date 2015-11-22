@@ -4,7 +4,6 @@
 [ -z "$PIKKUWIKI_DIR" ] && PIKKUWIKI_DIR="$HOME/pikkuwiki"
 [ -z "$EDITOR" ] && EDITOR=vi
 [ -z "$PW_DEFAULT_PAGE" ] && PW_DEFAULT_PAGE="Index"
-[ -z "$PW_PRETTY_FORMAT" ] && PW_PRETTY_FORMAT="%l:	%h"
 
 # Enable "strict" mode
 set -euo pipefail
@@ -86,15 +85,7 @@ formatter_pretty() {
     [ -f "$filename" ] && heading=$(head -n1 "$filename")
     local link=$(filename_to_link "$filename")
 
-    filename=$(sed_escape "$filename")
-    heading=$(sed_escape "$heading")
-    link=$(sed_escape "$link")
-
-    local result=$(echo "$PW_PRETTY_FORMAT" | sed \
-        -e "s/%l/$link/g" \
-        -e "s/%h/$heading/g" \
-        -e "s/%f/$filename/g")
-    printf "$result\n"
+    printf "%s:	%s\n" "$link" "$heading"
 }
 
 after_formatter_pretty() {
@@ -186,9 +177,6 @@ Environment variables:
   PW_DEFAULT_PAGE       The default page that is opened if no link
                         is provided for open command.
                         Default: Index
-
-  PW_PRETTY_FORMAT      The format to use in alternative formatting.
-                        Default: "%l:\t%h"
 
 Link format:
   All links to other pages start with tilde (~).
