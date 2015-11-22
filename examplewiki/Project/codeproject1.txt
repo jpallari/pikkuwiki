@@ -1,0 +1,4 @@
+Code project #1
+
+Create software for managing ~/todo
+

@@ -1,0 +1,5 @@
+TODO
+
+* Remember to fetch ~groceries.
+* Start writing ~Project/thesis.
+
