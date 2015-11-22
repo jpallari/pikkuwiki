@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
 # Load source code
-source pikkuwiki.sh
+source ./pikkuwiki.sh
 
 # Allow errors to collect test results
 set +e
@@ -18,9 +18,9 @@ assert() {
     local result="${2:-$?}"
     print_indent
     if [ "$result" = 0 ]; then
-        echo -e "\e[1;32mSuccess:\e[0m $1"
+        printf "\e[1;32mSuccess:\e[0m %s\n" "$1"
     else
-        echo -e "\e[0;31mFailure:\e[0m $1"
+        printf "\e[0;31mFailure:\e[0m %s\n" "$1"
     fi
 }
 
@@ -43,6 +43,18 @@ tests() {
     local expected_files
 
     testitem "resolve link"
+
+    [ $(run_pikkuwiki resolve) = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
+    assert "empty context & link"
+
+    [ $(run_pikkuwiki resolve "$PIKKUWIKI_DIR/" "") = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
+    assert "wiki dir as context"
+
+    [ $(run_pikkuwiki resolve "foo/bar") = "$PIKKUWIKI_DIR/foo/$PW_DEFAULT_PAGE.txt" ]
+    assert "empty link, sub directory #1"
+
+    [ $(run_pikkuwiki resolve "foo/bar/") = "$PIKKUWIKI_DIR/foo/bar/$PW_DEFAULT_PAGE.txt" ]
+    assert "empty link, sub directory #2"
 
     [ $(run_pikkuwiki resolve "foo" "bar") = "$PIKKUWIKI_DIR/bar.txt" ]
     assert "context at root level"
@@ -73,12 +85,12 @@ tests() {
     testitem "text files"
 
     expected_files=$(list \
-        "examplewiki/Project/codeproject1.txt" \
-        "examplewiki/Project/list.txt" \
-        "examplewiki/Project/codeproject2.txt" \
-        "examplewiki/groceries.txt" \
-        "examplewiki/Index.txt" \
-        "examplewiki/todo.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
+        "$PIKKUWIKI_DIR/Project/list.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
+        "$PIKKUWIKI_DIR/groceries.txt" \
+        "$PIKKUWIKI_DIR/index.txt" \
+        "$PIKKUWIKI_DIR/todo.txt" \
     )
     [ "$(text_files $PIKKUWIKI_DIR)" = "$expected_files" ]
     assert "all files"
@@ -86,30 +98,30 @@ tests() {
     testitem "find"
 
     expected_files=$(list \
-        "examplewiki/groceries.txt" \
-        "examplewiki/Project/codeproject1.txt" \
-        "examplewiki/Project/codeproject2.txt" \
-        "examplewiki/Project/thesis.txt" \
-        "examplewiki/todo.txt" \
+        "$PIKKUWIKI_DIR/groceries.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
+        "$PIKKUWIKI_DIR/Project/thesis.txt" \
+        "$PIKKUWIKI_DIR/todo.txt" \
     )
     [ "$(run_pikkuwiki find)" = "$expected_files" ]
     assert "find all"
 
     expected_files=$(list \
-        "examplewiki/Project/codeproject1.txt" \
-        "examplewiki/Project/codeproject2.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
     )
     [ "$(run_pikkuwiki find -l Project/list -p code)" = "$expected_files" ]
     assert "find from Project/list with filter 'code'"
 
-    [ "$(run_pikkuwiki find -l Project/codeproject1)" = "examplewiki/todo.txt" ]
+    [ "$(run_pikkuwiki find -l Project/codeproject1)" = "$PIKKUWIKI_DIR/todo.txt" ]
     assert "find from Project/codeproject1"
 
     expected_files=$(list \
-        "examplewiki/Project/codeproject1.txt" \
-        "examplewiki/Project/codeproject2.txt" \
-        "examplewiki/Project/thesis.txt" \
-        "examplewiki/todo.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
+        "$PIKKUWIKI_DIR/Project/thesis.txt" \
+        "$PIKKUWIKI_DIR/todo.txt" \
     )
     [ "$(run_pikkuwiki find -l Project)" = "$expected_files" ]
     assert "find from Project"

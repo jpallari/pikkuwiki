@@ -3,10 +3,10 @@
 # Read env variables
 [ -z "$PIKKUWIKI_DIR" ] && PIKKUWIKI_DIR="$HOME/pikkuwiki"
 [ -z "$EDITOR" ] && EDITOR=vi
-[ -z "$PW_DEFAULT_PAGE" ] && PW_DEFAULT_PAGE="Index"
+[ -z "$PW_DEFAULT_PAGE" ] && PW_DEFAULT_PAGE="index"
 
 # Enable "strict" mode
-set -euo pipefail
+set -eu
 
 # Pattern for recognizing links to other files
 LINK_PATTERN='~[_/[:alnum:]]\+'
@@ -26,16 +26,30 @@ filename_to_link() {
     echo "$link"
 }
 
+starts_with() {
+    local str="$1"
+    local prefix="$2"
+    local prefix_len=${#prefix}
+    [ "$(echo "$str" | cut -c"$prefix_len")" = "$prefix" ]
+}
+
 resolve_link() {
-    local context="/${1#$PIKKUWIKI_DIR/}"
+    local context=${1#$PIKKUWIKI_DIR}
+    context="/${context#/}"
     context=${context%/*}
     local link=${2#\~}
+    link=${link%.*}
+    link=${link:-$PW_DEFAULT_PAGE}
 
-    if [ ! "$(echo "$link" | cut -c1)" = "/" ]; then
-        link="$context/$link"
+    if $(starts_with "$link" "/") || [ "$context" = "/" ]; then
+        context="$PIKKUWIKI_DIR"
+    else
+        context="$PIKKUWIKI_DIR$context"
     fi
 
-    echo "$PIKKUWIKI_DIR/${link#/}.txt"
+    link=${link#/}
+
+    echo "$context/$link.txt"
 }
 
 resolve_links() {
@@ -49,9 +63,11 @@ find_links_from_file() {
 }
 
 find_links_from_directory() {
-    local IFS=$NEWL
-    for filename in $(text_files "$1"); do
-        find_links_from_file "$filename" "$2"
+    local IFS="$NEWL"
+    local dir="$1"
+    local pattern="$2"
+    for filename in $(text_files "$dir"); do
+        find_links_from_file "$filename" "$pattern"
     done
 }
 
@@ -60,12 +76,13 @@ text_files() {
 }
 
 find_links() {
-    local link=${1:-}
-    local filename="$link"
+    local filename="${1:-}"
     local pattern=${2:-}
 
-    if [ ! -f "$filename" ]; then
-        filename=$(resolve_link "" "$link")
+    if [ ! "$filename" ]; then
+        filename="$PIKKUWIKI_DIR"
+    elif [ ! -f "$filename" ]; then
+        filename=$(resolve_link "" "$filename")
     fi
 
     if [ -f "$filename" ]; then
@@ -73,10 +90,6 @@ find_links() {
     elif [ -d "${filename%.txt}" ]; then
         find_links_from_directory "${filename%.txt}" "$pattern"
     fi | sort -u
-}
-
-sed_escape() {
-    echo "$1" | sed -e 's/[\/&]/\\&/g'
 }
 
 formatter_pretty() {
@@ -135,7 +148,7 @@ run_pikkuwiki() {
             shift
             find_and_format_links "$@" ;;
         r|resolve)
-            resolve_link "$2" "$3" ;;
+            resolve_link "${2:-}" "${3:-}" ;;
         *)
             print_help
             ;;
@@ -150,7 +163,7 @@ usage: pikkuwiki <command> [arguments]
 
 Commands:
   o, open     open a given link using EDITOR. If link is empty,
-              PW_DEFAULT_PAGE or "Index" is opened instead.
+              PW_DEFAULT_PAGE or "index" is opened instead.
 
   f, find     find links from a given link, file, or directory
               using given pattern. Outputs the filenames of found
@@ -176,7 +189,7 @@ Environment variables:
 
   PW_DEFAULT_PAGE       The default page that is opened if no link
                         is provided for open command.
-                        Default: Index
+                        Default: index
 
 Link format:
   All links to other pages start with tilde (~).
