@@ -11,9 +11,6 @@ set -eu
 # Pattern for recognizing links to other files
 LINK_PATTERN='~[_/[:alnum:]]\+'
 
-NEWL='
-'
-
 grep_links() {
     grep -ow "$LINK_PATTERN"
 }
@@ -41,7 +38,7 @@ resolve_link() {
     link=${link%.*}
     link=${link:-$PW_DEFAULT_PAGE}
 
-    if $(starts_with "$link" "/") || [ "$context" = "/" ]; then
+    if starts_with "$link" "/" || [ "$context" = "/" ]; then
         context="$PIKKUWIKI_DIR"
     else
         context="$PIKKUWIKI_DIR$context"
@@ -62,34 +59,27 @@ find_links_from_file() {
     grep_links < "$1" | grep "$2" | resolve_links "$filename"
 }
 
-find_links_from_directory() {
-    local IFS="$NEWL"
-    local dir="$1"
-    local pattern="$2"
-    for filename in $(text_files "$dir"); do
-        find_links_from_file "$filename" "$pattern"
-    done
-}
-
-text_files() {
-    find "$1" -name '*.txt'
-}
-
 find_links() {
     local filename="${1:-}"
     local pattern=${2:-}
 
-    if [ ! "$filename" ]; then
-        filename="$PIKKUWIKI_DIR"
-    elif [ ! -f "$filename" ]; then
+    if [ ! -f "$filename" ]; then
         filename=$(resolve_link "" "$filename")
     fi
+    
+    if [ ! -f "$filename" ]; then
+        echo "Could not find a file for '$1'!" 1>&2
+    fi
 
-    if [ -f "$filename" ]; then
-        find_links_from_file "$filename" "$pattern"
-    elif [ -d "${filename%.txt}" ]; then
-        find_links_from_directory "${filename%.txt}" "$pattern"
-    fi | sort -u
+    find_links_from_file "$filename" "$pattern"
+}
+
+find_pages() {
+    if [ "$1" ]; then
+        find "$PIKKUWIKI_DIR" -iname '*.txt' -iname "*$1*"
+    else
+        find "$PIKKUWIKI_DIR" -iname '*.txt'
+    fi
 }
 
 formatter_pretty() {
@@ -120,8 +110,19 @@ format_links() {
     done | $after_formatter
 }
 
-find_and_format_links() {
-    local link=""
+find_and_format_pages() {
+    local pattern=""
+    local format=false
+    while getopts "p:F" flag; do
+        case "$flag" in
+            p) pattern=$OPTARG ;;
+            F) format=true ;;
+        esac
+    done
+    find_pages "$pattern" | format_links "$format"
+}
+
+show_and_format_links() {
     local pattern=""
     local format=false
     while getopts "l:p:F" flag; do
@@ -146,7 +147,10 @@ run_pikkuwiki() {
             open_link "${2:-}" ;;
         f|find)
             shift
-            find_and_format_links "$@" ;;
+            find_and_format_pages "$@" ;;
+        s|show)
+            shift
+            show_and_format_links "$@" ;;
         r|resolve)
             resolve_link "${2:-}" "${3:-}" ;;
         h|help)
@@ -166,22 +170,25 @@ Commands:
   o, open     open a given link using EDITOR. If link is empty,
               PW_DEFAULT_PAGE or "index" is opened instead.
 
-  f, find     find links from a given link, file, or directory
-              using given pattern. Outputs the filenames of found
-              links unless alternatiove formatting is provided.
+  f, find     find pages using the given pattern. Outputs the filenames of
+              found links unless alternative formatting is provided.
+
+  s, show     show links from given page. Outputs the filenames of the found
+              links unless alternative formatting is provded.
 
   r, resolve  resolve filename for given filename and link combination
 
   h, help     Print full help text
 
 Find arguments:
-  -l          link, file, or directory to search links from.
-              Directories are scanned recursively for .txt files.
-
-  -p          RegEx pattern to use for filtering links.
-              By default, no filtering is done.
-
+  -p          RegEx pattern to use for filtering pages.
   -F          Use alternative formatting from PW_PRETTY_FORMAT.
+
+Show arguments:
+  -l          link or file to search links from.
+  -p          RegEx pattern to use for filtering pages
+  -F          Use alternative formatting from PW_PRETTY_FORMAT.
+
 EOF
 }
 
@@ -228,12 +235,16 @@ Examples:
     pikkuwiki open '~America/Canada'
     pikkuwiki o Europe/Germany
 
-  Find all links in a page or directory and print out as filenames:
-    pikkuwiki find -l Europe/Germany
-    pikkuwiki f -l Europe
+  Find pages:
+    pikkuwiki find 'code'
+    pikkuwiki f 'eng'
 
-  Find matching links:
-    pikkuwiki f -l Europe/Germany -p 'Ber'
+  Show all links in a page:
+    pikkuwiki show -l Europe/Germany
+    pikkuwiki s -l Europe
+
+  Show matching links:
+    pikkuwiki s -l Europe/Germany -p 'Ber'
 
   Resolve link:
     pikkuwiki resolve Europe Germany
@@ -241,3 +252,4 @@ Examples:
 EOF
 }
 
+run_pikkuwiki "$@"

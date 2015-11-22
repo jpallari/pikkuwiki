@@ -1,7 +1,9 @@
 #!/bin/sh
 
-# Load source code
-source ./pikkuwiki.sh
+# Program that is to be tested
+pikkuwiki() {
+    ./pikkuwiki.sh "$@"
+}
 
 # Allow errors to collect test results
 set +e
@@ -36,53 +38,46 @@ list() {
 
 start_time=$(date)
 
-PIKKUWIKI_DIR="examplewiki"
+export PIKKUWIKI_DIR="examplewiki"
+export PW_DEFAULT_PAGE="index"
 
 # The tests
 tests() {
     local expected_files
 
-    testitem "resolve link"
+    testitem "resolve"
 
-    [ $(run_pikkuwiki resolve) = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
+    [ $(pikkuwiki resolve) = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
     assert "empty context & link"
 
-    [ $(run_pikkuwiki resolve "$PIKKUWIKI_DIR/" "") = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
+    [ $(pikkuwiki resolve "$PIKKUWIKI_DIR/" "") = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
     assert "wiki dir as context"
 
-    [ $(run_pikkuwiki resolve "foo/bar") = "$PIKKUWIKI_DIR/foo/$PW_DEFAULT_PAGE.txt" ]
+    [ $(pikkuwiki resolve "foo/bar") = "$PIKKUWIKI_DIR/foo/$PW_DEFAULT_PAGE.txt" ]
     assert "empty link, sub directory #1"
 
-    [ $(run_pikkuwiki resolve "foo/bar/") = "$PIKKUWIKI_DIR/foo/bar/$PW_DEFAULT_PAGE.txt" ]
+    [ $(pikkuwiki resolve "foo/bar/") = "$PIKKUWIKI_DIR/foo/bar/$PW_DEFAULT_PAGE.txt" ]
     assert "empty link, sub directory #2"
 
-    [ $(run_pikkuwiki resolve "foo" "bar") = "$PIKKUWIKI_DIR/bar.txt" ]
+    [ $(pikkuwiki resolve "foo" "bar") = "$PIKKUWIKI_DIR/bar.txt" ]
     assert "context at root level"
 
-    [ $(run_pikkuwiki resolve "" "cool") = "$PIKKUWIKI_DIR/cool.txt" ]
+    [ $(pikkuwiki resolve "" "cool") = "$PIKKUWIKI_DIR/cool.txt" ]
     assert "no context"
 
-    [ $(run_pikkuwiki resolve "foo/bar" "nice") = "$PIKKUWIKI_DIR/foo/nice.txt" ]
+    [ $(pikkuwiki resolve "foo/bar" "nice") = "$PIKKUWIKI_DIR/foo/nice.txt" ]
     assert "context at one level deep"
 
-    [ $(run_pikkuwiki resolve "foo/bar/" "nice") = "$PIKKUWIKI_DIR/foo/bar/nice.txt" ]
+    [ $(pikkuwiki resolve "foo/bar/" "nice") = "$PIKKUWIKI_DIR/foo/bar/nice.txt" ]
     assert "directory context"
 
-    [ $(run_pikkuwiki resolve "ignored/nope/" "/athome") = "$PIKKUWIKI_DIR/athome.txt" ]
+    [ $(pikkuwiki resolve "ignored/nope/" "/athome") = "$PIKKUWIKI_DIR/athome.txt" ]
     assert "ignored context"
 
-    [ $(run_pikkuwiki resolve "$PIKKUWIKI_DIR/my/file" "other") = "$PIKKUWIKI_DIR/my/other.txt" ]
+    [ $(pikkuwiki resolve "$PIKKUWIKI_DIR/my/file" "other") = "$PIKKUWIKI_DIR/my/other.txt" ]
     assert "wiki directory in context"
 
-    testitem "filename to link"
-
-    [ $(filename_to_link "$PIKKUWIKI_DIR/foobar.txt") = "foobar" ]
-    assert "root file"
-
-    [ $(filename_to_link "$PIKKUWIKI_DIR/foo/bar.txt") = "foo/bar" ]
-    assert "sub directory file"
-
-    testitem "text files"
+    testitem "find"
 
     expected_files=$(list \
         "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
@@ -92,39 +87,27 @@ tests() {
         "$PIKKUWIKI_DIR/index.txt" \
         "$PIKKUWIKI_DIR/todo.txt" \
     )
-    [ "$(text_files $PIKKUWIKI_DIR)" = "$expected_files" ]
-    assert "all files"
-
-    testitem "find"
-
-    expected_files=$(list \
-        "$PIKKUWIKI_DIR/groceries.txt" \
-        "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
-        "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
-        "$PIKKUWIKI_DIR/Project/thesis.txt" \
-        "$PIKKUWIKI_DIR/todo.txt" \
-    )
-    [ "$(run_pikkuwiki find)" = "$expected_files" ]
+    [ "$(pikkuwiki find)" = "$expected_files" ]
     assert "find all"
 
     expected_files=$(list \
         "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
         "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
     )
-    [ "$(run_pikkuwiki find -l Project/list -p code)" = "$expected_files" ]
-    assert "find from Project/list with filter 'code'"
+    [ "$(pikkuwiki find -p code)" = "$expected_files" ]
+    assert "find 'code'"
 
-    [ "$(run_pikkuwiki find -l Project/codeproject1)" = "$PIKKUWIKI_DIR/todo.txt" ]
-    assert "find from Project/codeproject1"
+    testitem "show"
 
     expected_files=$(list \
         "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
         "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
-        "$PIKKUWIKI_DIR/Project/thesis.txt" \
-        "$PIKKUWIKI_DIR/todo.txt" \
     )
-    [ "$(run_pikkuwiki find -l Project)" = "$expected_files" ]
-    assert "find from Project"
+    [ "$(pikkuwiki show -l Project/list -p code)" = "$expected_files" ]
+    assert "show from Project/list with filter 'code'"
+
+    [ "$(pikkuwiki show -l Project/codeproject1)" = "$PIKKUWIKI_DIR/todo.txt" ]
+    assert "show from Project/codeproject1"
 }
 
 time tests
