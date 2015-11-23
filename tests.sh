@@ -8,6 +8,9 @@ pikkuwiki() {
 # Allow errors to collect test results
 set +e
 
+# This value will be set to non-zero if any of the tests fail
+TESTS_SUCCESS=0
+
 # Change this mid script to control indentation on test messages
 ASSERT_INDENT=2
 
@@ -22,6 +25,7 @@ assert() {
     if [ "$result" = 0 ]; then
         printf "\e[1;32mSuccess:\e[0m %s\n" "$1"
     else
+        TESTS_SUCCESS=1
         printf "\e[0;31mFailure:\e[0m %s\n" "$1"
     fi
 }
@@ -47,34 +51,34 @@ tests() {
 
     testitem "resolve"
 
-    [ $(pikkuwiki resolve) = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
+    [ "$(pikkuwiki resolve)" = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
     assert "empty context & link"
 
-    [ $(pikkuwiki resolve "$PIKKUWIKI_DIR/" "") = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
+    [ "$(pikkuwiki resolve "$PIKKUWIKI_DIR/" "")" = "$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt" ]
     assert "wiki dir as context"
 
-    [ $(pikkuwiki resolve "foo/bar") = "$PIKKUWIKI_DIR/foo/$PW_DEFAULT_PAGE.txt" ]
+    [ "$(pikkuwiki resolve "foo/bar")" = "$PIKKUWIKI_DIR/foo/$PW_DEFAULT_PAGE.txt" ]
     assert "empty link, sub directory #1"
 
-    [ $(pikkuwiki resolve "foo/bar/") = "$PIKKUWIKI_DIR/foo/bar/$PW_DEFAULT_PAGE.txt" ]
+    [ "$(pikkuwiki resolve "foo/bar/")" = "$PIKKUWIKI_DIR/foo/bar/$PW_DEFAULT_PAGE.txt" ]
     assert "empty link, sub directory #2"
 
-    [ $(pikkuwiki resolve "foo" "bar") = "$PIKKUWIKI_DIR/bar.txt" ]
+    [ "$(pikkuwiki resolve "foo" "bar")" = "$PIKKUWIKI_DIR/bar.txt" ]
     assert "context at root level"
 
-    [ $(pikkuwiki resolve "" "cool") = "$PIKKUWIKI_DIR/cool.txt" ]
+    [ "$(pikkuwiki resolve "" "cool")" = "$PIKKUWIKI_DIR/cool.txt" ]
     assert "no context"
 
-    [ $(pikkuwiki resolve "foo/bar" "nice") = "$PIKKUWIKI_DIR/foo/nice.txt" ]
+    [ "$(pikkuwiki resolve "foo/bar" "nice")" = "$PIKKUWIKI_DIR/foo/nice.txt" ]
     assert "context at one level deep"
 
-    [ $(pikkuwiki resolve "foo/bar/" "nice") = "$PIKKUWIKI_DIR/foo/bar/nice.txt" ]
+    [ "$(pikkuwiki resolve "foo/bar/" "nice")" = "$PIKKUWIKI_DIR/foo/bar/nice.txt" ]
     assert "directory context"
 
-    [ $(pikkuwiki resolve "ignored/nope/" "/athome") = "$PIKKUWIKI_DIR/athome.txt" ]
+    [ "$(pikkuwiki resolve "ignored/nope/" "/athome")" = "$PIKKUWIKI_DIR/athome.txt" ]
     assert "ignored context"
 
-    [ $(pikkuwiki resolve "$PIKKUWIKI_DIR/my/file" "other") = "$PIKKUWIKI_DIR/my/other.txt" ]
+    [ "$(pikkuwiki resolve "$PIKKUWIKI_DIR/my/file" "other")" = "$PIKKUWIKI_DIR/my/other.txt" ]
     assert "wiki directory in context"
 
     testitem "find"
@@ -118,3 +122,4 @@ echo ""
 echo "Tests started : $start_time"
 echo "Tests ended   : $end_time"
 
+exit $TESTS_SUCCESS
