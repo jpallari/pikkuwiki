@@ -6,3 +6,4 @@ if g:pikkuwiki_map_keys
     nnoremap <buffer> <Leader>g :PWOpen<CR>
 endif
 
+command! -buffer -nargs=? PWShow call pikkuwiki#Show(<f-args>)

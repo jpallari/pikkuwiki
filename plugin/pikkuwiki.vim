@@ -7,5 +7,10 @@ if !exists('g:pikkuwiki_cmd')
     let g:pikkuwiki_cmd = 'pikkuwiki'
 endif
 
-command! -nargs=? PWOpen call pikkuwiki#PWOpen(<f-args>)
+if !exists('g:pikkuwiki_search_window_size')
+    let g:pikkuwiki_search_window_size = 10
+endif
+
+command! -nargs=? PWOpen call pikkuwiki#Open(<f-args>)
+command! -nargs=? PWFind call pikkuwiki#Find(<f-args>)
 
