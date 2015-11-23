@@ -177,6 +177,26 @@ view_link() {
     $PAGER "$(resolve_link "" "$1")"
 }
 
+init_pikkuwiki() {
+    local firstpage="$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt"
+    if [ ! -d "$PIKKUWIKI_DIR" ]; then
+        mkdir -p "$PIKKUWIKI_DIR"
+    fi
+    if [ ! -f "$firstpage" ]; then
+        cat <<'EOF' > "$firstpage"
+Homepage
+========
+
+Hi, this is your first pikkuwiki page.
+Add more .txt files to this directory.
+EOF
+        echo "pikkuwiki initialized successfully!" 1>&2
+        echo "your first page can be found from: $firstpage" 1>&2
+    else
+        echo "pikkuwiki is already initialized!" 1>&2
+    fi
+}
+
 # Main program
 run_pikkuwiki() {
     local cmd=${1:-}
@@ -188,6 +208,7 @@ run_pikkuwiki() {
 
     shift
     case "$cmd" in
+        init)       init_pikkuwiki ;;
         v|view)     view_link "${1:-}" ;;
         o|open)     open_link "${1:-}" ;;
         f|find)     find_and_format_pages "$@" ;;
@@ -214,19 +235,21 @@ print_minihelp() {
 usage: pikkuwiki <command> [arguments]
 
 Commands:
-  o, open     open a given link using EDITOR. If link is empty,
+  init        Initialize pikkuwiki. Creates the pikkuwiki directory.
+
+  o, open     Open a given link using EDITOR. If link is empty,
               PW_DEFAULT_PAGE or "index" is opened instead.
 
-  v, view     open a given link using PAGER. If link is empty,
+  v, view     Open a given link using PAGER. If link is empty,
               PW_DEFAULT_PAGE or "index" is opened instead.
 
-  f, find     find pages using the given pattern. Outputs the filenames of
+  f, find     Find pages using the given pattern. Outputs the filenames of
               found links unless alternative formatting is provided.
 
-  s, show     show links from given page. Outputs the filenames of the found
+  s, show     Show links from given page. Outputs the filenames of the found
               links unless alternative formatting is provded.
 
-  r, resolve  resolve filename for given filename and link combination
+  r, resolve  Resolve filename for given filename and link combination
 
   h, help     Print full help text
 
