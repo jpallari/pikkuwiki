@@ -1,15 +1,14 @@
-if exists("g:pikkuwiki_plugin_loaded")
-    finish
+if !exists('g:pikkuwiki_map_keys')
+    let g:pikkuwiki_map_keys = 1
 endif
-let g:pikkuwiki_plugin_loaded = 1
 
-function! s:PWOpen(...)
-    let link = a:0 >= 1 ? a:1 : expand('<cfile>')
-    let currentfile = expand('%:p')
-    let result = system('pikkuwiki resolve ' . l:currentfile . ' ' . l:link)
-    execute 'edit ' . l:result
-endfunction
+if !exists('g:pikkuwiki_cmd')
+    let g:pikkuwiki_cmd = 'pikkuwiki'
+endif
 
-command! -nargs=? PWOpen call s:PWOpen(<f-args>)
+command! -nargs=? PWOpen call pikkuwiki#PWOpen(<f-args>)
 
-nnoremap <buffer> <Leader>g :PWOpen<CR>
+if g:pikkuwiki_map_keys
+    nnoremap <buffer> <Leader>g :PWOpen<CR>
+endif
+
