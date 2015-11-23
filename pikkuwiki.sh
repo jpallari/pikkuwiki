@@ -147,6 +147,12 @@ view_link() {
 # Main program
 run_pikkuwiki() {
     local cmd=${1:-}
+
+    if [ ! "$cmd" ]; then
+        unknown_command
+        exit $?
+    fi
+
     shift
     case "$cmd" in
         v|view)     view_link "${1:-}" ;;
@@ -155,13 +161,22 @@ run_pikkuwiki() {
         s|show)     show_and_format_links "$@" ;;
         r|resolve)  resolve_link "${1:-}" "${2:-}" ;;
         h|help)     print_fullhelp ;;
-        *)          print_minihelp 1>&2 ;;
+        *)          unknown_command $cmd ;;
     esac
+}
+
+unknown_command() {
+    if [ "${1:-}" ]; then
+        echo "Unknown command '$1'!" 1>&2
+    else
+        echo "No command specified!" 1>&2
+    fi
+    print_minihelp 1>&2
+    return 1
 }
 
 print_minihelp() {
     cat <<'EOF'
-pikkuwiki - Minimal personal wiki tools
 
 usage: pikkuwiki <command> [arguments]
 
@@ -195,6 +210,7 @@ EOF
 }
 
 print_fullhelp() {
+    echo "pikkuwiki - Minimal personal wiki tools"
     print_minihelp
     cat <<'EOF'
 Environment variables:
