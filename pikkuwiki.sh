@@ -152,7 +152,7 @@ find_and_format_pages() {
             F) format=${OPTARG:-} ;;
         esac
     done
-    find_pages "$pattern" | format_links "$format"
+    find_pages "$pattern" | format_links "$format" | sort -u
 }
 
 show_and_format_links() {
@@ -166,7 +166,7 @@ show_and_format_links() {
             F) format=${OPTARG:-} ;;
         esac
     done
-    find_links "$link" "$pattern" | format_links "$format"
+    find_links "$link" "$pattern" | format_links "$format" | sort -u
 }
 
 open_link() {
