@@ -29,6 +29,21 @@ Copy or link the "pikkuwiki.sh" script to anywhere in your shell's path. E.g.:
 
   ln -s /path/to/pikkuwiki/pikkuwiki.sh /usr/local/bin/pikkuwiki
 
+Make sure that the script is executable:
+
+  chmod +x /path/where/pikkuwiki/is/installed/pikkuwiki
+
+By default, all the pages will be placed to "pikkuwiki" directory in your home
+directory. If you want to customize this, set the $PIKKUWIKI_DIR to something
+else.
+
+Continue by initializing the pikkuwiki directory:
+
+  pikkuwiki init
+
+You're now set up! You can start adding new pages by creating new txt files in
+the pikkuwiki directory.
+
 
 Installing pikkuwiki Vim plugin
 ===============================
