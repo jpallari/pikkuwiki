@@ -5,8 +5,8 @@ function! pikkuwiki#PWOpen(...)
         let link = expand('<cfile>')
         let currentfile = expand('%:p')
         let result = system(
-            \ g:pikkuwiki_cmd . ' resolve '
-            \ . l:currentfile . ' ' . l:link)
+            \ g:pikkuwiki_cmd . ' resolve "'
+            \ . l:currentfile . '" "' . l:link . '"')
     endif
     execute 'edit ' . l:result
 endfunction
