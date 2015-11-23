@@ -266,7 +266,7 @@ EOF
 }
 
 print_fullhelp() {
-    echo "pikkuwiki - Minimal personal wiki tools"
+    echo "pikkuwiki - Minimal personal wiki tool"
     print_minihelp
     cat <<'EOF'
 Environment variables:
