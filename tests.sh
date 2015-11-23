@@ -80,11 +80,11 @@ tests() {
     testitem "find"
 
     expected_files=$(list \
-        "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
-        "$PIKKUWIKI_DIR/Project/list.txt" \
-        "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
         "$PIKKUWIKI_DIR/groceries.txt" \
         "$PIKKUWIKI_DIR/index.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject1.txt" \
+        "$PIKKUWIKI_DIR/Project/codeproject2.txt" \
+        "$PIKKUWIKI_DIR/Project/list.txt" \
         "$PIKKUWIKI_DIR/todo.txt" \
     )
     [ "$(pikkuwiki find)" = "$expected_files" ]
