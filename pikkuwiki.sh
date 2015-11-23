@@ -158,7 +158,8 @@ find_and_format_pages() {
 show_and_format_links() {
     local pattern=""
     local format=""
-    while getopts "l:p:F" flag; do
+    local link=""
+    while getopts "l:p:F:" flag; do
         case "$flag" in
             l) link=${OPTARG:-} ;;
             p) pattern=${OPTARG:-} ;;
