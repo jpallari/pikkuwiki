@@ -5,12 +5,13 @@
 [ -z "$EDITOR" ] && EDITOR=vi
 [ -z "$PAGER" ] && PAGER=cat
 [ -z "$PW_DEFAULT_PAGE" ] && PW_DEFAULT_PAGE="index"
+[ -z "$PW_FILE_EXT" ] && PW_FILE_EXT="txt"
 
 # Enable "strict" mode
 set -eu
 
 # Pattern for recognizing links to other files
-LINK_PATTERN='~[_/[:alnum:]]\+'
+LINK_PATTERN='~\S\+'
 
 grep_links() {
     grep -ow "$LINK_PATTERN"
@@ -20,7 +21,7 @@ filename_to_link() {
     local link
     link=${1#$PIKKUWIKI_DIR}
     link=${link#/}
-    link=${link%.txt}
+    link=${link%.$PW_FILE_EXT}
     echo "$link"
 }
 
@@ -36,7 +37,7 @@ resolve_link() {
     context="/${context#/}"
     context=${context%/*}
     local link=${2#\~}
-    link=${link%.*}
+    link=${link%.$PW_FILE_EXT}
     link=${link:-$PW_DEFAULT_PAGE}
 
     if starts_with "$link" "/" || [ "$context" = "/" ]; then
@@ -47,7 +48,7 @@ resolve_link() {
 
     link=${link#/}
 
-    echo "$context/$link.txt"
+    echo "$context/$link.$PW_FILE_EXT"
 }
 
 resolve_links() {
@@ -77,9 +78,9 @@ find_links() {
 
 find_pages() {
     if [ "$1" ]; then
-        find "$PIKKUWIKI_DIR" -iname '*.txt' -iname "*$1*"
+        find "$PIKKUWIKI_DIR" -iname "*.$PW_FILE_EXT" -iname "*$1*"
     else
-        find "$PIKKUWIKI_DIR" -iname '*.txt'
+        find "$PIKKUWIKI_DIR" -iname "*.$PW_FILE_EXT"
     fi
 }
 
@@ -178,17 +179,17 @@ view_link() {
 }
 
 init_pikkuwiki() {
-    local firstpage="$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.txt"
+    local firstpage="$PIKKUWIKI_DIR/$PW_DEFAULT_PAGE.$PW_FILE_EXT"
     if [ ! -d "$PIKKUWIKI_DIR" ]; then
         mkdir -p "$PIKKUWIKI_DIR"
     fi
     if [ ! -f "$firstpage" ]; then
-        cat <<'EOF' > "$firstpage"
+        cat <<EOF > "$firstpage"
 Homepage
 ========
 
 Hi, this is your first pikkuwiki page.
-Add more .txt files to this directory.
+Add more .$PW_FILE_EXT files to this directory.
 EOF
         echo "pikkuwiki initialized successfully!" 1>&2
         echo "your first page can be found from: $firstpage" 1>&2
@@ -283,9 +284,13 @@ Environment variables:
                         is provided for open command.
                         Default: index
 
+  PW_FILE_EXT           The file extension for pages.
+                        Default: txt
+
 Link syntax:
   All links to other pages start with tilde (~).
-  All pages point to a .txt file.
+  All pages point to a .txt file by default.
+  The file extension can be customized by changing the PW_FILE_EXT variable.
   The page which the link refers to depends on where the page that is linking.
 
   Absolute links:

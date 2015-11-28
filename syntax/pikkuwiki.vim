@@ -9,6 +9,6 @@ syntax match pwHeader "\%^.*$"
 highlight link pwHeader Keyword
 
 " Links
-syntax match pwLink "\(^\|\s\)\~[_/[:alnum:]]\+"
+syntax match pwLink "\(^\|\s\)\~\S\+"
 highlight link pwLink Identifier
 

@@ -146,12 +146,17 @@ Pikkuwiki can be configured through environment variables.
                         is provided for open command.
                         Default: index
 
+  PW_FILE_EXT           The file extension for pages.
+                        Default: txt
+
 
 Link syntax
 ===========
 
 All links to other pages start with tilde (~).
 All pages point to a .txt file (case sensitive).
+All pages point to a .txt file by default.
+The file extension can be customized by changing the PW_FILE_EXT variable.
 The page which the link refers to depends on where the page that is linking.
 
 Absolute links:
