@@ -187,7 +187,7 @@ The following commands are available:
 
 The following key bindings are available in pikkuwiki pages:
 
-  <Leader>g   Opens the link under the cursor.
+  gl          Opens the link under the cursor.
 
 The following key bindings are available in pikkuwiki search window:
 
