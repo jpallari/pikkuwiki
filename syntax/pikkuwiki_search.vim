@@ -5,7 +5,7 @@ endif
 let b:current_syntax = "pikkuwiki_search"
 
 " Links
-syntax match pwLink "^[~_/[:alnum:]]\+"
+syntax match pwLink "^\S\+"
 highlight link pwLink Identifier
 
 
