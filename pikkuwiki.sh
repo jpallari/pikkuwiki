@@ -261,7 +261,14 @@ Find arguments:
 Show arguments:
   -l          link or file to search links from.
   -p          RegEx pattern to use for filtering pages
-  -F          Use alternative formatting.
+  -F          Use alternative formatting. See the available formatters below.
+
+Formatters:
+  header    first line of the page
+  file      file path of the page (default)
+  link      link to the page from root
+  pretty    the link and the header
+  space     links separated by spaces (useful for bash completion list)
 
 EOF
 }
@@ -270,11 +277,39 @@ print_fullhelp() {
     echo "pikkuwiki - Minimal personal wiki tool"
     print_minihelp
     cat <<'EOF'
-Environment variables:
+
+Examples
+========
+
+Open a page in editor:
+  pikkuwiki open '~America/Canada'
+  pikkuwiki o Europe/Germany
+
+Find pages:
+  pikkuwiki find 'code'
+  pikkuwiki f 'eng'
+
+Show all links in a page:
+  pikkuwiki show -l Europe/Germany
+  pikkuwiki s -l Europe
+
+Show matching links:
+  pikkuwiki s -l Europe/Germany -p 'Ber'
+
+Resolve link:
+  pikkuwiki resolve Europe Germany
+  pikkuwiki r $PIKKUWIKI_DIR/Europe/Germany.txt Berlin
+
+
+Configuration
+=============
+
+Pikkuwiki can be configured through environment variables.
+
   PIKKUWIKI_DIR         The directory where pages are located.
                         Default: $HOME/pikkuwiki
 
-  EDITOR                The editor that the open command launches
+  EDITOR                The editor that the open command launches.
                         Default: vi
 
   PAGER                 The viewer that is view command launches.
@@ -287,53 +322,26 @@ Environment variables:
   PW_FILE_EXT           The file extension for pages.
                         Default: txt
 
-Link syntax:
-  All links to other pages start with tilde (~).
-  All pages point to a .txt file by default.
-  The file extension can be customized by changing the PW_FILE_EXT variable.
-  The page which the link refers to depends on where the page that is linking.
 
-  Absolute links:
-    ~/Europe            => $PIKKUWIKI_DIR/Europe.txt
-    ~/Europe/Germany    => $PIKKUWIKI_DIR/Europe/Germany.txt
+Link syntax
+===========
 
-  Relative links in '~/Europe' page:
-    ~America            => $PIKKUWIKI_DIR/America.txt
-    ~America/Canada     => $PIKKUWIKI_DIR/America/Canada.txt
+All links to other pages start with tilde (~).
+All pages point to a .txt file by default (case sensitive).
+The file extension can be customized by changing the PW_FILE_EXT variable.
+The page which the link refers to depends on where the page that is linking.
 
-  Relative links in '~/Europe/Germany' page:
-    ~Berlin             => $PIKKUWIKI_DIR/Europe/Germany/Berlin.txt
-    ~Munich             => $PIKKUWIKI_DIR/Europe/Germany/Munich.txt
+Absolute links:
+  ~/Europe            => $PIKKUWIKI_DIR/Europe.txt
+  ~/Europe/Germany    => $PIKKUWIKI_DIR/Europe/Germany.txt
 
-Formatters:
-  There are several ways 'find' and 'show' results can be formatted
-  using the '-F' option.
+Relative links in '~/Europe' page:
+  ~America            => $PIKKUWIKI_DIR/America.txt
+  ~America/Canada     => $PIKKUWIKI_DIR/America/Canada.txt
 
-  header    first line of the page
-  file      file path of the page (default)
-  link      link to the page from root
-  pretty    the link and the header
-  space     links separated by spaces (useful for bash completion list)
-
-Examples:
-  Open a page in editor:
-    pikkuwiki open '~America/Canada'
-    pikkuwiki o Europe/Germany
-
-  Find pages:
-    pikkuwiki find 'code'
-    pikkuwiki f 'eng'
-
-  Show all links in a page:
-    pikkuwiki show -l Europe/Germany
-    pikkuwiki s -l Europe
-
-  Show matching links:
-    pikkuwiki s -l Europe/Germany -p 'Ber'
-
-  Resolve link:
-    pikkuwiki resolve Europe Germany
-    pikkuwiki r $PIKKUWIKI_DIR/Europe/Germany.txt Berlin
+Relative links in '~/Europe/Germany' page:
+  ~Berlin             => $PIKKUWIKI_DIR/Europe/Germany/Berlin.txt
+  ~Munich             => $PIKKUWIKI_DIR/Europe/Germany/Munich.txt
 EOF
 }
 

@@ -67,7 +67,6 @@ Using the command line tool
 pikkuwiki <command> [arguments]
 
 Commands:
-
   init        Initialize pikkuwiki. Creates the pikkuwiki directory.
 
   o, open     Open a given link using EDITOR. If link is empty,
@@ -87,18 +86,15 @@ Commands:
   h, help     Print full help text
 
 Find arguments:
-
   -p          RegEx pattern to use for filtering pages.
   -F          Use alternative formatting.
 
 Show arguments:
-
   -l          link or file to search links from.
   -p          RegEx pattern to use for filtering pages
   -F          Use alternative formatting. See the available formatters below.
 
 Formatters:
-
   header    first line of the page
   file      file path of the page (default)
   link      link to the page from root
@@ -128,8 +124,8 @@ Resolve link:
   pikkuwiki r $PIKKUWIKI_DIR/Europe/Germany.txt Berlin
 
 
-Configuring pikkuwiki
-=====================
+Configuration
+=============
 
 Pikkuwiki can be configured through environment variables.
 
@@ -154,8 +150,7 @@ Link syntax
 ===========
 
 All links to other pages start with tilde (~).
-All pages point to a .txt file (case sensitive).
-All pages point to a .txt file by default.
+All pages point to a .txt file by default (case sensitive).
 The file extension can be customized by changing the PW_FILE_EXT variable.
 The page which the link refers to depends on where the page that is linking.
 
