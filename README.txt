@@ -45,20 +45,12 @@ You're now set up! You can start adding new pages by creating new txt files in
 the pikkuwiki directory.
 
 
-Installing pikkuwiki Vim plugin
-===============================
+Vim plugin
+==========
 
-The easiest set up can be achieved using one of the Vim plugin managers:
-  * vim-plug: https://github.com/junegunn/vim-plug
-  * Vundle: https://github.com/VundleVim/Vundle.vim
+A Vim plugin for pikkuwiki can be found from Github:
 
-For vim-plug, add the following line to your plugin list:
-
-  Plug 'Lepovirta/pikkuwiki'
-
-For Vundle, add the following line to your plugin list:
-
-  Plugin 'Lepovirta/pikkuwiki'
+  https://github.com/Lepovirta/pikkuwiki.vim
 
 
 Using the command line tool
@@ -167,33 +159,6 @@ Relative links in '~/Europe/Germany' page:
   ~Munich             => $PIKKUWIKI_DIR/Europe/Germany/Munich.txt
 
 
-Using Vim plugin
-================
-
-Vim plugin provides syntax highlighting and commands for pikkuwiki pages.
-
-The following commands are available:
-
-  :PWOpen     Used for opening links under the cursor.
-              An optional link can be supplied as a parameter to jump to an
-              arbitrary page.
-
-  :PWFind     Used for finding pages in the pikkuwiki directory.
-              Filter parameter can be supplied to filter the pages.
-
-  :PWShow     Used for finding links in the current page.
-              Only available in pikkuwiki pages.
-              Filter parameter can be supplied to filter links.
-
-The following key bindings are available in pikkuwiki pages:
-
-  gl          Opens the link under the cursor.
-
-The following key bindings are available in pikkuwiki search window:
-
-  <Return>    Opens the link under the cursor.
-
-
 Bash auto completion
 ====================
 
@@ -213,11 +178,6 @@ not use any tools that are uncommon in Linux or Unix systems.
 
 Tests can be added to "tests.sh" script.
 Bash can be used in the tests script if necessary.
-
-The Vim plugin is laid out in pathogen compatible manner:
-  https://github.com/tpope/vim-pathogen
-
-No dependencies allowed in the Vim plugin.
 
 
 License
